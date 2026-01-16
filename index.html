@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>EVENT ATM</title>
+
+  <style>
+    :root{
+      --bg1:#118cff;
+      --bg2:#0a63ff;
+      --text:#ffffff;
+      --line: rgba(255,255,255,.22);
+      --warn:#ffe86a;
+      --ok:#2dff9a;
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+      background: radial-gradient(1100px 700px at 50% -18%, #38a6ff 0%, var(--bg1) 40%, var(--bg2) 100%);
+      color:var(--text);
+      display:flex;
+      justify-content:center;
+      overflow:hidden;
+    }
+
+    .app{
+      width:min(920px, 100%);
+      height:100svh;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding: max(8px, env(safe-area-inset-top)) 10px max(8px, env(safe-area-inset-bottom)) 10px;
+      min-height:0;
+    }
+
+    /* TOPBAR */
+    .topbar{
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0,0,0,.10);
+      backdrop-filter: blur(6px);
+      min-height: 40px;
+    }
+    .brand{display:flex; gap:10px; align-items:center; font-weight:1100; letter-spacing:.35px;}
+    .toggle{display:flex; align-items:center; gap:10px; user-select:none;}
+    .switch{
+      width:46px; height:26px;
+      background: rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.26);
+      border-radius:999px;
+      position:relative;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .switch::after{
+      content:"";
+      position:absolute;
+      top:3px; left:3px;
+      width:20px; height:20px;
+      border-radius:999px;
+      background: rgba(255,255,255,.95);
+      transition: transform .18s ease;
+    }
+    .switch.on::after{ transform: translateX(20px); }
+
+    .card{
+      border:1px solid rgba(255,255,255,.22);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.16) 100%);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      min-height:0;
+    }
+
+    /* SETUP */
+    .setup{
+      flex: 1 1 auto;
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .h1{font-size:18px; font-weight:1200; margin:0;}
+    .sub{margin:0; color:rgba(255,255,255,.88); font-size:13px; line-height:1.35;}
+    .grid{display:grid; grid-template-columns: 1fr; gap:10px; margin-top:2px;}
+    label{font-size:12px; color:rgba(255,255,255,.88); display:block; margin-bottom:6px;}
+    input{
+      width:100%;
+      padding:12px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.26);
+      background: rgba(0,0,0,.12);
+      color: var(--text);
+      outline:none;
+      font-size:14px;
+    }
+    input:focus{
+      border-color: rgba(255,255,255,.55);
+      box-shadow: 0 0 0 4px rgba(255,255,255,.18);
+    }
+    .btn{
+      width:100%;
+      padding:14px 14px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.24);
+      background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.18));
+      color:var(--text);
+      font-weight:1200;
+      letter-spacing:.2px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    /* ATM */
+    .atmWrap{
+      flex: 1 1 auto;
+      position:relative;
+      padding:12px;
+      display:none;
+      flex-direction:column;
+      gap:10px;
+      min-height:0;
+    }
+    .atmHeader{
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .atmTitle{font-weight:1300; font-size:14px; letter-spacing:.35px;}
+    .atmMeta{font-size:12px; color:rgba(255,255,255,.86);}
+
+    .modeChip{
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.10);
+      white-space:nowrap;
+    }
+
+    .screen{
+      flex: 1 1 auto;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.22);
+      background: linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.18) 100%);
+      padding:12px;
+      position:relative;
+      overflow:hidden;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    /* LCD */
+    .lcd{
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.26);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.12));
+      padding:14px 12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .scanline{
+      position:absolute; inset:0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.04),
+        rgba(255,255,255,.04) 1px,
+        rgba(0,0,0,0) 3px,
+        rgba(0,0,0,0) 6px
+      );
+      opacity:.25;
+      mix-blend-mode: overlay;
+      pointer-events:none;
+    }
+    .lcd .bank{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      font-size:12px; color:rgba(255,255,255,.90);
+    }
+    .lcd .bank strong{color: var(--text); letter-spacing:.25px;}
+    .lcd .msg{margin-top:10px; font-size:18px; font-weight:1300; line-height:1.16;}
+    .lcd .amt{
+      margin-top:8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size:26px; font-weight:1300; letter-spacing:.7px;
+      color: rgba(255,255,255,.98);
+      text-shadow: 0 0 18px rgba(255,255,255,.22);
+    }
+    .lcd .status{
+      margin-top:10px;
+      font-size:12px; color:rgba(255,255,255,.92);
+      display:flex; align-items:center; gap:8px;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--warn);
+      box-shadow: 0 0 12px rgba(255,232,106,.40);
+      animation: blink 1.1s infinite;
+    }
+    @keyframes blink { 0%,45%{opacity:1} 55%,100%{opacity:.2} }
+
+    .pinRow{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      margin-top:10px;
+    }
+    .pinDots{
+      display:flex; gap:8px; align-items:center;
+      font-family: ui-monospace, monospace;
+      letter-spacing: 6px;
+      font-size: 18px;
+      color: rgba(255,255,255,.98);
+    }
+    .pinHelp{font-size:12px; color:rgba(255,255,255,.90);}
+
+    /* Keypad */
+    .pad{
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.26);
+      background: rgba(0,0,0,.12);
+      padding:10px;
+      display:grid;
+      gap:10px;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    .key{
+      padding:14px 10px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.24);
+      background: rgba(0,0,0,.10);
+      color:var(--text);
+      font-weight:1300;
+      font-size:18px;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      display:flex; align-items:center; justify-content:center;
+      min-height: 50px;
+    }
+    .key:active{ transform: translateY(1px); }
+    .key.muted{ color: rgba(255,255,255,.92); font-size:14px; font-weight:1200; }
+    .key.danger{ background: rgba(255,77,79,.18); }
+    .key.accent{ background: rgba(45,255,154,.18); }
+
+    /* Layout */
+    .layout{
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:0;
+    }
+    .leftCol, .rightCol{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:0;
+    }
+
+    /* Actions */
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top:auto;
+    }
+    .btnSmall{
+      flex:1;
+      padding:12px 10px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.24);
+      background: rgba(0,0,0,.12);
+      color:var(--text);
+      font-weight:1300;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 48px;
+    }
+    .btnGreen{ background: rgba(45,255,154,.18); }
+    .btnDisabled{opacity:.45; pointer-events:none;}
+
+    /* ✅ Withdraw popup (auto) */
+    .withdrawOverlay{
+      position:absolute; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(8px);
+      z-index: 28;
+      padding:12px;
+    }
+    .withdrawPop{
+      width:min(540px, 96%);
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.28);
+      background: rgba(0,0,0,.22);
+      box-shadow: 0 25px 70px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+    .withdrawTop{
+      padding:16px 16px 12px;
+      border-bottom:1px solid rgba(255,255,255,.20);
+      display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+    }
+    .withdrawTitle{
+      font-weight:1500;
+      font-size:20px;
+      letter-spacing:.2px;
+    }
+    .withdrawSub{
+      margin-top:6px;
+      color:rgba(255,255,255,.90);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .badgeOk{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.30);
+      background: rgba(45,255,154,.18);
+      font-weight:1300;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .withdrawBody{
+      padding:14px 16px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .withdrawInfo{
+      border:1px solid rgba(255,255,255,.22);
+      border-radius: 16px;
+      background: rgba(0,0,0,.12);
+      padding:12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size:12px;
+      line-height:1.55;
+      white-space:pre-line;
+      color: rgba(255,255,255,.98);
+    }
+    .autoHint{
+      font-size:12px;
+      color:rgba(255,255,255,.86);
+      text-align:center;
+    }
+
+    /* ✅ LAST SCREEN: CARD INSERT ONLY (NO BUTTON) */
+    .cardOverlay{
+      position:absolute; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      background: rgba(0,0,0,.48);
+      backdrop-filter: blur(10px);
+      z-index: 30;
+      padding:12px;
+      overflow:hidden;
+    }
+
+    /* Right-direction arrow guide */
+    .arrowGuide{
+      position:absolute;
+      right: clamp(10px, 3vw, 26px);
+      top: 50%;
+      transform: translateY(-50%);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      pointer-events:none;
+      opacity: .98;
+      filter: drop-shadow(0 12px 30px rgba(0,0,0,.35));
+    }
+    .arrow{
+      font-size: clamp(58px, 9vw, 120px);
+      line-height: 1;
+      color: rgba(255,255,255,.95);
+      text-shadow: 0 0 24px rgba(255,255,255,.18);
+      animation: nudgeRight 1s infinite ease-in-out;
+    }
+    .arrowGlow{
+      width: clamp(26px, 4vw, 40px);
+      height: clamp(26px, 4vw, 40px);
+      border-radius:999px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,232,106,.95), rgba(255,232,106,.18) 60%, rgba(0,0,0,0) 70%);
+      box-shadow: 0 0 28px rgba(255,232,106,.55);
+      animation: pulse 1s infinite ease-in-out;
+    }
+    .arrowLabel{
+      font-size: 11px;
+      letter-spacing: .6px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.24);
+      background: rgba(255,255,255,.10);
+      color: rgba(255,255,255,.92);
+      white-space:nowrap;
+    }
+
+    @keyframes nudgeRight{
+      0%   { transform: translateX(-10px); opacity: .85; }
+      50%  { transform: translateX(8px); opacity: 1; }
+      100% { transform: translateX(-10px); opacity: .85; }
+    }
+    @keyframes pulse{
+      0%   { transform: scale(.9); opacity: .7; }
+      50%  { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(.9); opacity: .7; }
+    }
+
+    .cardPanel{
+      width:min(760px, 96%);
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.30);
+      background: rgba(0,0,0,.18);
+      box-shadow: 0 30px 80px rgba(0,0,0,.45);
+      padding:20px 18px 18px;
+      text-align:center;
+    }
+    .cardBig{
+      font-size: clamp(22px, 4.2vw, 34px);
+      font-weight:1600;
+      margin:0;
+      letter-spacing:.2px;
+      line-height:1.2;
+    }
+    .cardSub{
+      margin:12px 0 0;
+      font-size:13px;
+      color: rgba(255,255,255,.90);
+      line-height:1.5;
+    }
+    .hintPill{
+      margin:14px auto 0;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.26);
+      background: rgba(255,255,255,.10);
+      font-size:12px;
+      color:rgba(255,255,255,.92);
+      white-space:nowrap;
+    }
+    .pulseDot{
+      width:10px;height:10px;border-radius:999px;
+      background: var(--warn);
+      box-shadow: 0 0 18px rgba(255,232,106,.55);
+      animation: pulse 1s infinite;
+    }
+
+    /* LANDSCAPE: compact + topbar ultra slim + header one line */
+    @media (orientation: landscape){
+      .app{
+        gap: 6px;
+        padding-top: max(2px, env(safe-area-inset-top));
+        padding-bottom: max(2px, env(safe-area-inset-bottom));
+      }
+      .topbar{
+        padding: 2px 6px;
+        border-radius: 10px;
+        min-height: 28px;
+      }
+      .brand{ gap:7px; font-size:11px; }
+      .toggle span{ font-size:10px !important; }
+      .switch{ transform: scale(.75); transform-origin: right center; }
+
+      .atmWrap{ padding: 6px; gap: 4px; }
+      .screen{ padding: 6px; gap: 6px; border-radius: 14px; }
+
+      .layout{
+        flex-direction:row;
+        align-items:stretch;
+        gap:6px;
+      }
+      .leftCol, .rightCol{ flex:1 1 0; min-width:0; gap:6px; }
+
+      .lcd{ padding: 8px; border-radius: 12px; }
+      .lcd .msg{ font-size: 15px; margin-top: 6px; }
+      .lcd .amt{ font-size: 20px; margin-top: 4px; }
+      .lcd .status{ font-size: 10px; margin-top: 6px; }
+      .pinRow{ margin-top: 6px; }
+      .pinDots{ font-size: 15px; letter-spacing: 4px; }
+      .pinHelp{ font-size: 10px; }
+
+      .pad{ padding: 6px; gap: 6px; border-radius: 14px; }
+      .key{
+        min-height: 38px;
+        padding: 8px 6px;
+        font-size: 16px;
+        border-radius: 12px;
+      }
+      .key.muted{ font-size: 11px; }
+
+      .actions{ gap: 6px; }
+      .btnSmall{
+        min-height: 38px;
+        padding: 8px 8px;
+        font-size: 13px;
+        border-radius: 12px;
+      }
+
+      #atmHeadLeft{
+        display:flex;
+        flex-direction:row !important;
+        align-items:center;
+        gap:10px;
+        flex-wrap:wrap;
+      }
+      #atmHeadLeft .atmTitle,
+      #atmHeadLeft .atmMeta{
+        white-space:nowrap;
+        margin:0;
+      }
+
+      .withdrawTitle{ font-size:18px; }
+      .cardBig{ font-size: clamp(20px, 3.6vw, 30px); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#ffffff;box-shadow:0 0 14px rgba(255,255,255,.45)"></span>
+        <span>EVENT ATM</span>
+      </div>
+
+      <div class="toggle" title="효과음">
+        <span style="font-size:12px;color:rgba(255,255,255,.95)">SOUND</span>
+        <div id="soundSwitch" class="switch on" role="switch" aria-checked="true"></div>
+      </div>
+    </div>
+
+    <!-- Setup -->
+    <div id="setupCard" class="card setup">
+      <h1 class="h1">EVENT ATM (스마트폰 화면)</h1>
+      <p class="sub">연출: <b>PIN → 현금 인출 → “인출되었습니다” 팝업(2초) → (마지막) 카드 넣어주세요 ➜</b></p>
+
+      <div class="grid">
+        <div>
+          <label for="cardTitle">상단 문구</label>
+          <input id="cardTitle" maxlength="18" inputmode="text" value="우리 가족 전용 ATM" />
+        </div>
+        <div>
+          <label for="mainMsg">출금 메시지</label>
+          <input id="mainMsg" maxlength="22" inputmode="text" value="행사 축하 인출" />
+        </div>
+        <div>
+          <label for="amount">금액(숫자)</label>
+          <input id="amount" maxlength="12" inputmode="numeric" value="500000" />
+        </div>
+      </div>
+
+      <button id="startBtn" class="btn"><span>시작</span><span style="opacity:.85">▶</span></button>
+    </div>
+
+    <!-- ATM -->
+    <div id="atmCard" class="card atmWrap">
+      <div class="atmHeader">
+        <div class="left" id="atmHeadLeft">
+          <div class="atmTitle" id="atmTitle">우리 가족 전용 ATM</div>
+          <div class="atmMeta">거래일시: <span id="dt"></span></div>
+        </div>
+        <span class="modeChip" id="modeChip">PIN</span>
+      </div>
+
+      <div class="screen">
+
+        <!-- ✅ 인출되었습니다 팝업(자동) -->
+        <div class="withdrawOverlay" id="withdrawOverlay">
+          <div class="withdrawPop">
+            <div class="withdrawTop">
+              <div>
+                <div class="withdrawTitle">인출되었습니다</div>
+                <div class="withdrawSub">거래가 정상 처리되었습니다.</div>
+              </div>
+              <div class="badgeOk">APPROVED</div>
+            </div>
+            <div class="withdrawBody">
+              <div class="withdrawInfo" id="withdrawInfo"></div>
+              <div class="autoHint">잠시 후 다음 단계로 자동 이동합니다 (탭하면 바로 이동)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ 마지막 카드 유도 화면(화살표) -->
+        <div class="cardOverlay" id="cardOverlay">
+          <div class="arrowGuide">
+            <div class="arrowGlow"></div>
+            <div class="arrow">➜</div>
+            <div class="arrowLabel">RIGHT SIDE</div>
+          </div>
+
+          <div class="cardPanel">
+            <p class="cardBig">오른쪽 실제 기계에<br/>카드를 넣어주세요</p>
+            <p class="cardSub">카드를 넣는 순간, 돈이 바로 쏟아집니다.</p>
+            <div class="hintPill">
+              <span class="pulseDot"></span>
+              <span>RIGHT SIDE • CARD INSERT</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="layout">
+          <div class="leftCol">
+            <div class="lcd">
+              <div class="scanline"></div>
+
+              <div class="bank">
+                <strong>SECURE BANK</strong>
+                <span id="session">SESSION #0001</span>
+              </div>
+
+              <div class="msg" id="atmMsg">행사 축하 인출</div>
+              <div class="amt" id="atmAmt">₩500,000</div>
+
+              <div class="status">
+                <span class="dot"></span>
+                <span id="statusText">비밀번호를 눌러주세요.</span>
+              </div>
+
+              <div class="pinRow">
+                <div class="pinDots" id="pinDots">○ ○ ○ ○</div>
+                <div class="pinHelp" id="pinHelp">비밀번호 4자리를 입력하세요</div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="cashBtn" class="btnSmall btnGreen btnDisabled">현금 인출</button>
+              <button id="backBtn" class="btnSmall">처음으로</button>
+            </div>
+          </div>
+
+          <div class="rightCol">
+            <div class="pad" id="pad">
+              <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+              <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+              <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+              <button class="key muted danger" data-k="clear">전체지움</button><button class="key" data-k="0">0</button><button class="key muted accent" data-k="ok">확인</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const els = {
+      setupCard: document.getElementById('setupCard'),
+      atmCard: document.getElementById('atmCard'),
+      startBtn: document.getElementById('startBtn'),
+      backBtn: document.getElementById('backBtn'),
+      cashBtn: document.getElementById('cashBtn'),
+
+      soundSwitch: document.getElementById('soundSwitch'),
+
+      cardTitle: document.getElementById('cardTitle'),
+      mainMsg: document.getElementById('mainMsg'),
+      amount: document.getElementById('amount'),
+
+      atmTitle: document.getElementById('atmTitle'),
+      atmMsg: document.getElementById('atmMsg'),
+      atmAmt: document.getElementById('atmAmt'),
+
+      statusText: document.getElementById('statusText'),
+      modeChip: document.getElementById('modeChip'),
+      dt: document.getElementById('dt'),
+      session: document.getElementById('session'),
+
+      pad: document.getElementById('pad'),
+      pinDots: document.getElementById('pinDots'),
+      pinHelp: document.getElementById('pinHelp'),
+
+      withdrawOverlay: document.getElementById('withdrawOverlay'),
+      withdrawInfo: document.getElementById('withdrawInfo'),
+
+      cardOverlay: document.getElementById('cardOverlay'),
+    };
+
+    let soundOn = true;
+
+    // flow: PIN_FIRST -> READY_CASH -> WITHDRAW_POP -> CARD_PROMPT (LAST)
+    let state = "PIN_FIRST";
+    let pin = "";
+    let withdrawTimer = null;
+
+    // Prevent overlapping jingles
+    let jingleCtx = null;
+
+    function setSwitch(el, on){
+      el.classList.toggle("on", on);
+      el.setAttribute("aria-checked", on ? "true":"false");
+    }
+
+    function fmtAmount(raw){
+      const n = (raw || "").replace(/[^\d]/g,'');
+      if(!n) return "";
+      const num = Number(n);
+      if(!Number.isFinite(num)) return "";
+      return "₩" + num.toLocaleString('ko-KR');
+    }
+    els.amount.addEventListener('input', ()=>{ els.amount.value = els.amount.value.replace(/[^\d]/g,''); });
+
+    function vibrate(ms=18){ if(navigator.vibrate) navigator.vibrate(ms); }
+
+    function beep(type="tap"){
+      if(!soundOn) return;
+      try{
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "square";
+        const now = ctx.currentTime;
+
+        let f1=740, f2=740, dur=0.06;
+        if(type==="bad"){ f1=220; f2=330; dur=0.12; }
+        if(type==="ok"){ f1=880; f2=1320; dur=0.14; }
+
+        o.frequency.setValueAtTime(f1, now);
+        o.frequency.exponentialRampToValueAtTime(Math.max(1,f2), now+Math.max(0.04, dur*0.6));
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.exponentialRampToValueAtTime(0.16, now+0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, now+dur);
+
+        o.connect(g); g.connect(ctx.destination);
+        o.start(now); o.stop(now+dur+0.02);
+        setTimeout(()=>ctx.close(), 220);
+      }catch(e){}
+    }
+
+    // ✅ 범용 "축하 벨소리" (빠르고, 볼륨 업, 여러 번 반복)
+    function playCongratsRingtoneLoop(){
+      if(!soundOn) return;
+
+      // stop previous (if any)
+      try{
+        if(jingleCtx){
+          jingleCtx.close();
+          jingleCtx = null;
+        }
+      }catch(e){}
+
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      let ctx;
+      try { ctx = new AudioContext(); } catch(e){ return; }
+      jingleCtx = ctx;
+
+      const tempo = 196;            // ✅ 빠르게
+      const beat  = 60 / tempo;
+      const t0    = ctx.currentTime + 0.05;
+
+      // "축하합니다 축하합니다" 느낌의 밝은 모티프(벨소리용)
+      // [freq, beats]
+      const C5=523.25, D5=587.33, E5=659.25, F5=698.46, G5=783.99, A5=880.00;
+      const motif = [
+        [E5,1],[E5,1],[F5,1],[G5,2],   // 축-하-합-니(강)
+        [G5,1],[F5,1],[E5,2],          // 다-  축-하
+        [D5,1],[E5,1],[F5,1],[E5,2],   // 합-니-다 (상승/하강)
+        [C5,2],[C5,1],                 // (짧은 마무리)
+      ];
+
+      const repeats = 8; // ✅ "몇 번 정도 계속" -> 8번(현장용 충분히 길게)
+
+      // master gain (overall volume)
+      const master = ctx.createGain();
+      master.gain.setValueAtTime(0.0001, t0);
+      master.gain.exponentialRampToValueAtTime(0.28, t0 + 0.02); // ✅ 볼륨 업
+      master.connect(ctx.destination);
+
+      let t = t0;
+
+      for(let loop=0; loop<repeats; loop++){
+        motif.forEach(([freq, beats])=>{
+          const dur = beats * beat;
+
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+
+          o.type = "sine";            // ✅ 벨소리 톤
+          o.frequency.setValueAtTime(freq, t);
+
+          // per-note envelope (좀 더 또렷하게)
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(0.55, t + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + dur - 0.02);
+
+          o.connect(g);
+          g.connect(master);
+
+          o.start(t);
+          o.stop(t + dur);
+
+          t += dur;
+        });
+
+        // loop gap (벨소리 느낌)
+        t += beat * 1.0;
+      }
+
+      // cleanup
+      const totalSec = (t - ctx.currentTime) + 0.3;
+      setTimeout(()=>{
+        try{
+          if(jingleCtx === ctx){
+            ctx.close();
+            jingleCtx = null;
+          } else {
+            ctx.close();
+          }
+        }catch(e){}
+      }, Math.ceil(totalSec * 1000));
+    }
+
+    function setMode(text){ els.modeChip.textContent = text; }
+    function setDisabled(btn, disabled){ btn.classList.toggle('btnDisabled', disabled); }
+
+    function updateDateTime(){
+      const d = new Date();
+      const pad = (x)=>String(x).padStart(2,'0');
+      els.dt.textContent = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      els.session.textContent = "SESSION #" + String(Math.floor(Math.random()*9000)+1000);
+    }
+
+    function resetPin(){ pin=""; els.pinDots.textContent="○ ○ ○ ○"; }
+    function renderPinDots(){
+      const dots = Array.from({length:4}, (_,i)=> i < pin.length ? "●" : "○").join(" ");
+      els.pinDots.textContent = dots;
+    }
+
+    async function tryFullscreen(){
+      const el = document.documentElement;
+      try{
+        if(el.requestFullscreen) await el.requestFullscreen();
+        else if(el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+      }catch(e){}
+    }
+
+    function showWithdrawPopup(show){
+      els.withdrawOverlay.style.display = show ? "flex" : "none";
+    }
+    function showCardOverlay(show){
+      els.cardOverlay.style.display = show ? "flex" : "none";
+    }
+
+    function goCardLastScreen(){
+      if(withdrawTimer){ clearTimeout(withdrawTimer); withdrawTimer=null; }
+      showWithdrawPopup(false);
+      setState("CARD_PROMPT");
+      playCongratsRingtoneLoop(); // ✅ 마지막 화면 뜰 때 "축하" 벨소리 반복
+    }
+
+    function setState(next){
+      state = next;
+
+      if(state==="PIN_FIRST"){
+        setMode("PIN");
+        els.statusText.textContent="비밀번호를 눌러주세요.";
+        els.pinHelp.textContent="비밀번호 4자리를 입력하세요";
+        setDisabled(els.cashBtn, true);
+        resetPin();
+        showCardOverlay(false);
+        showWithdrawPopup(false);
+      }
+
+      if(state==="READY_CASH"){
+        setMode("OK");
+        els.statusText.textContent="승인되었습니다. [현금 인출]을 눌러주세요.";
+        els.pinHelp.textContent="현금 인출을 진행합니다";
+        setDisabled(els.cashBtn, false);
+        showCardOverlay(false);
+        showWithdrawPopup(false);
+      }
+
+      if(state==="WITHDRAW_POP"){
+        setMode("DONE");
+        els.statusText.textContent="인출되었습니다.";
+        els.pinHelp.textContent="잠시 후 다음 단계로 이동합니다";
+        setDisabled(els.cashBtn, true);
+        showCardOverlay(false);
+        showWithdrawPopup(true);
+      }
+
+      if(state==="CARD_PROMPT"){
+        setMode("CARD");
+        els.statusText.textContent="오른쪽 기계에 카드를 넣어주세요.";
+        els.pinHelp.textContent="카드 투입 순간 돈이 나옵니다";
+        setDisabled(els.cashBtn, true);
+        showWithdrawPopup(false);
+        showCardOverlay(true);
+      }
+    }
+
+    function fillWithdrawInfo(){
+      const info =
+`[SECURE BANK]
+거래내용: ${els.atmMsg.textContent}
+출금금액: ${els.atmAmt.textContent}
+승인번호: ${Math.floor(Math.random()*900000)+100000}
+거래일시: ${els.dt.textContent}`;
+      els.withdrawInfo.textContent = info;
+    }
+
+    function showATM(){
+      els.atmTitle.textContent = els.cardTitle.value.trim() || "EVENT ATM";
+      els.atmMsg.textContent = els.mainMsg.value.trim() || "이벤트 인출";
+      els.atmAmt.textContent = fmtAmount(els.amount.value.trim()) || "₩0";
+      updateDateTime();
+
+      showCardOverlay(false);
+      showWithdrawPopup(false);
+
+      els.setupCard.style.display="none";
+      els.atmCard.style.display="flex";
+      setState("PIN_FIRST");
+    }
+
+    function showSetup(){
+      if(withdrawTimer){ clearTimeout(withdrawTimer); withdrawTimer=null; }
+      showCardOverlay(false);
+      showWithdrawPopup(false);
+
+      // stop any jingle when going back
+      try{
+        if(jingleCtx){
+          jingleCtx.close();
+          jingleCtx = null;
+        }
+      }catch(e){}
+
+      els.atmCard.style.display="none";
+      els.setupCard.style.display="flex";
+    }
+
+    // sound toggle
+    els.soundSwitch.addEventListener('click', ()=>{
+      soundOn=!soundOn;
+      setSwitch(els.soundSwitch, soundOn);
+      vibrate(12);
+      beep(soundOn?"ok":"bad");
+
+      // if turning sound off, stop current jingle
+      if(!soundOn){
+        try{
+          if(jingleCtx){
+            jingleCtx.close();
+            jingleCtx = null;
+          }
+        }catch(e){}
+      }
+    });
+
+    // start/back
+    els.startBtn.addEventListener('click', ()=>{ vibrate(20); beep("ok"); showATM(); });
+    els.backBtn.addEventListener('click', ()=>{ vibrate(14); beep("bad"); showSetup(); });
+
+    // keypad (PIN)
+    els.pad.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      const k = btn.getAttribute('data-k');
+      vibrate(10);
+
+      if(state!=="PIN_FIRST") return;
+
+      if(k==="clear"){
+        pin="";
+        renderPinDots();
+        beep("bad");
+        return;
+      }
+
+      if(k==="ok"){
+        if(pin.length!==4){
+          els.statusText.textContent="비밀번호 4자리를 입력해주세요.";
+          beep("bad");
+          return;
+        }
+        beep("ok");
+        updateDateTime();
+        setState("READY_CASH");
+        return;
+      }
+
+      if(/^\d$/.test(k)){
+        if(pin.length>=4) return;
+        pin+=k;
+        renderPinDots();
+        beep("tap");
+        if(pin.length===4) els.statusText.textContent="확인을 눌러주세요.";
+      }
+    });
+
+    // cash -> withdraw popup (2s) -> last card screen + congrats ringtone loop
+    els.cashBtn.addEventListener('click', async ()=>{
+      if(state!=="READY_CASH") return;
+
+      vibrate(22); beep("ok");
+      await tryFullscreen();
+
+      updateDateTime();
+      fillWithdrawInfo();
+      setState("WITHDRAW_POP");
+
+      // ✅ 2초 뒤 자동으로 마지막 카드 유도 화면으로
+      withdrawTimer = setTimeout(goCardLastScreen, 2000);
+    });
+
+    // 팝업은 "탭하면 바로 넘어가게"
+    els.withdrawOverlay.addEventListener('click', ()=> goCardLastScreen());
+
+    // init
+    setSwitch(els.soundSwitch, soundOn);
+    showSetup();
+  </script>
+</body>
+</html>
