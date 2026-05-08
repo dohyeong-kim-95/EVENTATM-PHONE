@@ -1,0 +1,19 @@
+{
+  "name": "EVENT ATM",
+  "short_name": "EVENT ATM",
+  "description": "우체국 스타일 이벤트 ATM",
+  "start_url": "/EVENTATM-PHONE/",
+  "scope": "/EVENTATM-PHONE/",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0B0D20",
+  "theme_color": "#C9151B",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
