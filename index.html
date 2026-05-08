@@ -497,9 +497,9 @@
 
     .arrowGuide{
       position: absolute;
-      right: max(10px, env(safe-area-inset-right));
-      top: 50%;
-      transform: translateY(-50%);
+      bottom: max(16px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -532,9 +532,9 @@
     }
 
     @keyframes nudgeRight{
-      0%  { transform: translateX(-10px); opacity:.8; }
-      50% { transform: translateX(8px);  opacity:1; }
-      100%{ transform: translateX(-10px); opacity:.8; }
+      0%  { transform: translateY(-8px); opacity:.8; }
+      50% { transform: translateY(6px);  opacity:1; }
+      100%{ transform: translateY(-8px); opacity:.8; }
     }
     @keyframes pulse{
       0%  { transform:scale(.88); opacity:.65; }
@@ -758,16 +758,16 @@
         <!-- 마지막: 카드 투입 안내 -->
         <div class="cardOverlay" id="cardOverlay">
           <div class="arrowGuide">
+            <div class="arrow">⬇</div>
             <div class="arrowGlow"></div>
-            <div class="arrow">➜</div>
-            <div class="arrowLabel">RIGHT SIDE</div>
+            <div class="arrowLabel">BELOW · 아래</div>
           </div>
           <div class="cardPanel">
             <p class="cardBig">아래 기계에<br/>카드를 넣어주세요</p>
             <p class="cardSub">카드를 넣는 순간, 돈이 바로 쏟아집니다.</p>
             <div class="hintPill">
               <span class="pulseDot"></span>
-              <span>RIGHT SIDE · CARD INSERT</span>
+              <span>BELOW · CARD INSERT</span>
             </div>
           </div>
         </div>
