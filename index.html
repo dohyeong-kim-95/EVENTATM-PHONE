@@ -763,7 +763,7 @@
             <div class="arrowLabel">RIGHT SIDE</div>
           </div>
           <div class="cardPanel">
-            <p class="cardBig">오른쪽 기계에<br/>카드를 넣어주세요</p>
+            <p class="cardBig">아래 기계에<br/>카드를 넣어주세요</p>
             <p class="cardSub">카드를 넣는 순간, 돈이 바로 쏟아집니다.</p>
             <div class="hintPill">
               <span class="pulseDot"></span>
@@ -1020,7 +1020,7 @@
       }
       if(state==="CARD_PROMPT"){
         setMode("CARD", "card-chip");
-        els.statusText.textContent = "오른쪽 기계에 카드를 넣어주세요.";
+        els.statusText.textContent = "아래 기계에 카드를 넣어주세요.";
         els.pinHelp.textContent = "카드 투입 → 출금";
         setDisabled(els.cashBtn, true);
         showWithdrawPopup(false);
