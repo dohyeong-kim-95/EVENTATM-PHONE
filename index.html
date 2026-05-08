@@ -49,6 +49,7 @@
         max(env(safe-area-inset-bottom), 0px)
         max(env(safe-area-inset-left), 0px);
       min-height: 0;
+      overflow: hidden;
     }
 
     /* ── 상단 바 (우체국 빨강) ── */
@@ -352,6 +353,15 @@
     .btnRed{ color: var(--brand-red); }
     .btnDisabled{ opacity:.35; pointer-events:none; }
 
+    /* ── right-side 래퍼 (세로 기본) ── */
+    .right-side{
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
     /* ── 키패드 ── */
     .pad{
       flex: 1 1 auto;
@@ -577,45 +587,84 @@
 
     /* ── 가로 모드 ── */
     @media (orientation: landscape){
-      .topbar{ height:40px; padding:0 10px; }
-      .brand{ font-size:13px; gap:7px; }
-      .brand-icon{ width:24px; height:24px; }
-      .toggle-label{ font-size:11px; }
+      /* 앱 전체 너비 제한 해제 */
+      .app{ width:100%; max-width:none; }
 
-      .atmHeader{ padding:7px 12px; }
+      /* 상단 바 슬림 */
+      .topbar{ height:38px; padding:0 12px; border-bottom-width:1px; }
+      .brand{ font-size:13px; gap:7px; }
+      .brand-icon{ width:22px; height:22px; border-radius:5px; }
+      .brand-icon svg{ width:14px; height:14px; }
+      .toggle-label{ font-size:11px; }
+      .switch{ width:36px; height:20px; }
+      .switch::after{ width:14px; height:14px; }
+      .switch.on::after{ transform:translateX(16px); }
+
+      /* 설정 화면: 2칸 그리드 */
+      .setup{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto 1fr;
+        gap: 10px 20px;
+        padding: 14px 20px;
+        align-content: start;
+      }
+      .setup-head{ grid-column:1/-1; }
+      .setup-head h1{ font-size:15px; }
+      .setup-head p{ font-size:11px; }
+      .divider{ grid-column:1/-1; margin:0; }
+      .btn-start{ grid-column:1/-1; padding:13px; font-size:14px; margin-top:2px; }
+
+      /* ATM 헤더 슬림 */
+      .atmHeader{ padding:6px 14px; min-height:0; }
       .atmTitle{ font-size:12px; }
       .atmMeta{ font-size:10px; }
+      .modeChip{ font-size:10px; padding:4px 8px; }
 
+      /* ATM 본문: 좌(LCD) + 우(키패드) 가로 분할 */
       .atmBody{ flex-direction:row; }
+
       .lcd{
-        flex:0 0 46%;
+        flex:0 0 42%;
         border-bottom:none;
         border-right:1px solid var(--border2);
-        padding:10px 12px 8px;
+        padding:10px 14px 8px;
+        overflow-y:auto;
       }
-      .lcd-msg{ font-size:14px; margin-bottom:5px; }
+      .lcd-brand{ margin-bottom:6px; }
+      .lcd-msg{ font-size:14px; margin-bottom:4px; }
       .lcd-amt{ font-size:22px; }
       .lcd-status{ margin-top:7px; font-size:11px; }
       .pin-row{ margin-top:7px; }
       .pinDots{ font-size:16px; letter-spacing:5px; }
       .pinHelp{ font-size:10px; }
 
-      .right-side{
-        flex:1 1 auto;
-        display:flex;
-        flex-direction:column;
-        min-height:0;
-      }
-      .actions{
-        border-bottom:1px solid var(--border2);
-      }
-      .btnSmall{ min-height:42px; font-size:13px; padding:10px 8px; }
-      .pad{ flex:1 1 auto; }
-      .key{ min-height:42px; font-size:18px; }
-      .key.muted{ font-size:11px; }
+      /* right-side: 액션 + 키패드 */
+      .right-side{ flex:1 1 auto; }
+      .btnSmall{ min-height:40px; font-size:13px; padding:0 8px; }
+      .key{ min-height:0; font-size:19px; }
+      .key.muted{ font-size:12px; }
+
+      /* 팝업: 가로에서 좌우 여백 확보, 세로 스크롤 */
+      .withdrawOverlay{ padding:10px 20px; }
+      .withdrawPop{ max-width:480px; display:flex; flex-direction:column; max-height:100%; }
+      .withdrawTop{ padding:10px 14px; }
+      .withdrawTitle{ font-size:16px; }
+      .withdrawSub{ font-size:11px; margin-top:2px; }
+      .withdrawBody{ padding:10px 14px 12px; gap:8px; overflow-y:auto; }
+      .withdrawInfo{ font-size:11px; line-height:1.55; padding:8px 12px; }
+      .autoHint{ font-size:11px; }
+
+      /* 카드 투입 안내: 가로에서 텍스트 작게 */
+      .cardPanel{ max-width:280px; padding:18px 16px 14px; }
+      .cardBig{ font-size:18px; }
+      .cardSub{ font-size:12px; margin-top:6px; }
+      .hintPill{ margin-top:10px; font-size:11px; padding:7px 12px; }
+      .arrow{ font-size:54px; }
+      .arrowGlow{ width:24px; height:24px; }
     }
 
-    /* ── S23 portrait 세밀 조정 (360~430px) ── */
+    /* ── S23 세로 세밀 조정 (360~430px) ── */
     @media (max-width:430px) and (orientation:portrait){
       .lcd-amt{ font-size:28px; }
       .lcd-msg{ font-size:16px; }
